@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Document;
 use App\Services\TextChunker;
 use Illuminate\Http\Request;
+use App\Jobs\GenerateChunkEmbedding;
 
 class DocumentController extends Controller
 {
@@ -30,10 +31,12 @@ class DocumentController extends Controller
         ]);
 
         foreach ($chunker->chunk($document->content) as $position => $text) {
-            $document->chunks()->create([
+            $chunk = $document->chunks()->create([
                 'position' => $position,
                 'content' => $text,
             ]);
+
+            GenerateChunkEmbedding::dispatch($chunk);
         }
 
         return redirect()
