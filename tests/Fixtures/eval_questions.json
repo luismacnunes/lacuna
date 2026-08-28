@@ -1,0 +1,91 @@
+{
+  "answerable": [
+    {
+      "question": "Em que dias da semana é que podemos fazer deploy?",
+      "expect": "Deploy para o ambiente do cliente"
+    },
+    {
+      "question": "Durante quanto tempo é que guardamos as cópias tiradas antes de uma publicação?",
+      "expect": "Deploy para o ambiente do cliente"
+    },
+    {
+      "question": "Se faltarem dados de um dia, qual é a primeira coisa a verificar?",
+      "expect": "Integração do feed SFTP de imputações"
+    },
+    {
+      "question": "Como é que se interpretam os montantes que vêm do construtor?",
+      "expect": "Integração do feed SFTP de imputações"
+    },
+    {
+      "question": "A aplicação abre em branco sem dizer nada, o que costuma ser?",
+      "expect": "Ambiente de desenvolvimento local"
+    },
+    {
+      "question": "Onde vou buscar dados para trabalhar na minha máquina?",
+      "expect": "Ambiente de desenvolvimento local"
+    },
+    {
+      "question": "Enganei-me numa alteração ao esquema que já foi para produção, o que faço?",
+      "expect": "Convenções de base de dados e política de migrations"
+    },
+    {
+      "question": "Em que fuso horário guardamos as datas?",
+      "expect": "Convenções de base de dados e política de migrations"
+    },
+    {
+      "question": "Porque é que os totais das facturas não batem certo quando se soma tudo de uma vez?",
+      "expect": "Workarounds no código legado de facturação"
+    },
+    {
+      "question": "Porque é que a morada aparece repetida em vez de vir da ficha?",
+      "expect": "Workarounds no código legado de facturação"
+    },
+    {
+      "question": "Um utilizador diz que se esqueceu da palavra-passe, o que lhe respondo?",
+      "expect": "Autenticação e sessões partilhadas com o portal do cliente"
+    },
+    {
+      "question": "Quanto tempo é que alguém fica ligado antes de ter de entrar outra vez?",
+      "expect": "Autenticação e sessões partilhadas com o portal do cliente"
+    },
+    {
+      "question": "Quanto tempo demora a recuperar de um desastre?",
+      "expect": "Backups e reposição da base de dados"
+    },
+    {
+      "question": "Vale a pena acordar alguém de madrugada por causa de uma funcionalidade em baixo com alternativa manual?",
+      "expect": "Turnos de apoio e gestão de incidentes"
+    },
+    {
+      "question": "Depois de uma avaria grave, o que é que temos de escrever e em que prazo?",
+      "expect": "Turnos de apoio e gestão de incidentes"
+    },
+    {
+      "question": "Um cliente diz que não vê o menu de existências, é problema de permissões?",
+      "expect": "Particularidades do cliente Verdauto"
+    },
+    {
+      "question": "Posso aprovar a minha própria alteração se for só uma linha?",
+      "expect": "Regras de revisão de código"
+    },
+    {
+      "question": "Qual é a diferença entre estar à espera de uma decisão e estar à espera de material?",
+      "expect": "Estados do quadro de oficina"
+    },
+    {
+      "question": "O fornecedor devolveu um erro depois de muitas consultas seguidas, o que se passa?",
+      "expect": "Integração com o catálogo de peças"
+    },
+    {
+      "question": "Porque é que o relatório mensal já não estoira ao fim de dois minutos?",
+      "expect": "Optimização do relatório de facturação mensal"
+    }
+  ],
+  "gaps": [
+    "Qual é a política de teletrabalho da empresa?",
+    "Como se pede férias?",
+    "Que garantia damos nas peças aplicadas?",
+    "Qual é o custo mensal do alojamento?",
+    "Quem decide o preço das horas de mão de obra?"
+  ]
+}
