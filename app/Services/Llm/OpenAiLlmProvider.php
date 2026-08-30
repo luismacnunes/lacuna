@@ -68,4 +68,43 @@ class OpenAiLlmProvider implements LlmProvider
         - Sê directo e conciso.
         TXT;
     }
+
+    public function generateQuestions(string $title, string $description, string $content, int $max = 4): array
+    {
+        $response = Http::withToken($this->apiKey)
+            ->timeout(60)
+            ->post('https://api.openai.com/v1/chat/completions', [
+                'model' => $this->model,
+                'temperature' => 0.3,
+                'response_format' => ['type' => 'json_object'],
+                'messages' => [
+                    ['role' => 'system', 'content' => $this->questionsPrompt($max)],
+                    ['role' => 'user', 'content' => "Título: {$title}\nDescrição: {$description}\n\nConteúdo:\n{$content}"],
+                ],
+            ]);
+
+        if ($response->failed()) {
+            throw new RuntimeException('Falha ao gerar perguntas: ' . $response->body());
+        }
+
+        $payload = json_decode($response->json('choices.0.message.content'), true);
+
+        return array_slice($payload['questions'] ?? [], 0, $max);
+    }
+
+    private function questionsPrompt(int $max): string
+    {
+        return <<<TXT
+        Recebes um documento de uma base de conhecimento interna de uma equipa de desenvolvimento. A tua tarefa é identificar o que falta neste documento para ele ser útil a um colega daqui a seis meses.
+
+        Devolve um objecto JSON com um único campo "questions": um array de no máximo {$max} perguntas em português europeu.
+
+        Regras:
+        - Pergunta apenas o que o documento NÃO responde. Se o documento já explica alguma coisa, não perguntes sobre isso.
+        - Prefere perguntas sobre o porquê das decisões, sobre casos de excepção, e sobre o que fazer quando algo corre mal.
+        - Não faças perguntas genéricas do tipo "qual é o objectivo deste documento" ou "quem é o responsável".
+        - Cada pergunta tem de ser respondível por quem escreveu o documento, em poucas frases.
+        - Se o documento estiver completo e não faltar nada relevante, devolve um array vazio.
+        TXT;
+    }
 }

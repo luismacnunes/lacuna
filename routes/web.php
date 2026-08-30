@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/dashboard', fn () => redirect()->route('ask.index'))->name('dashboard');
 Route::get('/', [AskController::class, 'index'])->name('ask.index');
 Route::post('/ask', [AskController::class, 'store'])->name('ask.store');
 Route::get('/search', [SearchController::class, 'index'])->name('search.index');
