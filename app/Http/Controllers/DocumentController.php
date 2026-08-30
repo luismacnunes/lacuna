@@ -28,6 +28,7 @@ class DocumentController extends Controller
             'content' => $data['content'],
             'source_type' => 'text',
             'content_hash' => hash('sha256', $data['content']),
+            'user_id' => $request->user()->id,
         ]);
 
         foreach ($chunker->chunk($document->content) as $position => $text) {

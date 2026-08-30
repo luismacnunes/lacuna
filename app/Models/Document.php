@@ -8,7 +8,7 @@ use App\Models\Chunk;
 
 class Document extends Model
 {
-    protected $fillable = ['topic_id', 'title', 'description', 'source_type', 'original_filename', 'storage_path', 'content', 'content_hash'];
+    protected $fillable = ['topic_id', 'title', 'description', 'source_type', 'original_filename', 'storage_path', 'content', 'content_hash', 'user_id'];
 
     public function topic()
     {
@@ -18,5 +18,10 @@ class Document extends Model
     public function chunks()
     {
         return $this->hasMany(Chunk::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
