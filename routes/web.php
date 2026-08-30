@@ -4,6 +4,7 @@ use App\Http\Controllers\AskController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\QueueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', fn () => redirect()->route('ask.index'))->name('dashboard');
@@ -18,6 +19,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/documents/create', [DocumentController::class, 'create'])->name('documents.create');
     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
+
+    Route::get('/queue', [QueueController::class, 'index'])->name('queue.index');
 });
 
 require __DIR__.'/auth.php';
