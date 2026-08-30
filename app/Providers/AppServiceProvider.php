@@ -6,6 +6,8 @@ use Illuminate\Support\ServiceProvider;
 use App\Services\Embeddings\EmbeddingProvider;
 use App\Services\Embeddings\FakeEmbeddingProvider;
 use App\Services\Embeddings\OpenAiEmbeddingProvider;
+use App\Services\Llm\LlmProvider;
+use App\Services\Llm\OpenAiLlmProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +24,12 @@ class AppServiceProvider extends ServiceProvider
                 ),
                 default => new FakeEmbeddingProvider(),
             };
+        });
+        $this->app->bind(LlmProvider::class, function () {
+            return new OpenAiLlmProvider(
+                config('services.openai.key'),
+                config('services.openai.chat_model'),
+            );
         });
     }
 
