@@ -12,6 +12,7 @@ use App\Models\Question;
 use App\Models\Topic;
 use App\Services\Llm\LlmProvider;
 use App\Services\Retrieval\ChunkRetriever;
+use App\Services\TopicResolver;
 
 class AnswerQuestion
 {
@@ -20,7 +21,8 @@ class AnswerQuestion
 
     public function __construct(
         private ChunkRetriever $retriever,
-        private LlmProvider $llm
+        private LlmProvider $llm,
+        private TopicResolver $topics
     ) {}
 
     public function handle(string $text): Question
@@ -71,10 +73,17 @@ class AnswerQuestion
 
     private function recordTopicGap(Question $question): void
     {
-        $topic = Topic::create([
-            'name' => $question->text,
-            'has_material' => false,
-        ]);
+        $name = $this->llm->suggestTopicName($question->text);
+
+        $topic = $this->topics->resolve($name);
+
+        if (! $topic->wasRecentlyCreated && $topic->has_material) {
+            $this->createPending($topic, $question);
+
+            return;
+        }
+
+        $topic->update(['has_material' => false]);
 
         $this->createPending($topic, $question);
     }
@@ -94,6 +103,10 @@ class AnswerQuestion
 
     private function createPending(Topic $topic, Question $question): void
     {
+        if ($this->hasSimilarPending($topic, $question->text)) {
+            return;
+        }
+
         PendingQuestion::create([
             'topic_id' => $topic->id,
             'question_id' => $question->id,
@@ -101,5 +114,15 @@ class AnswerQuestion
             'origin' => PendingOrigin::RealFailure,
             'status' => PendingStatus::Open,
         ]);
+    }
+
+    private function hasSimilarPending(Topic $topic, string $text): bool
+    {
+        $normalised = mb_strtolower(trim($text));
+
+        return $topic->pendingQuestions()
+            ->where('status', PendingStatus::Open)
+            ->get(['text'])
+            ->contains(fn ($p) => mb_strtolower(trim($p->text)) === $normalised);
     }
 }

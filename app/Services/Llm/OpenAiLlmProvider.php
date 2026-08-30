@@ -117,4 +117,37 @@ class OpenAiLlmProvider implements LlmProvider
         - Se o documento estiver completo e não faltar nada relevante, devolve um array vazio.
         TXT;
     }
+
+    public function suggestTopicName(string $question): string
+    {
+        $response = Http::withToken($this->apiKey)
+            ->timeout(30)
+            ->post('https://api.openai.com/v1/chat/completions', [
+                'model' => $this->model,
+                'temperature' => 0,
+                'response_format' => ['type' => 'json_object'],
+                'messages' => [
+                    ['role' => 'system', 'content' => <<<'TXT'
+                    Recebes uma pergunta feita a uma base de conhecimento interna. Devolve o nome do tema a que essa pergunta pertence.
+
+                    Devolve um objecto JSON com um único campo "name".
+
+                    Regras:
+                    - Duas a quatro palavras, em português europeu.
+                    - É o assunto, não a pergunta. Sem verbos interrogativos, sem pontos de interrogação.
+                    - Usa a forma mais geral que ainda seja específica. "Garantias de peças", não "Garantia da peça aplicada no carro do cliente".
+                    - Duas perguntas diferentes sobre o mesmo assunto têm de produzir o mesmo nome.
+                    TXT],
+                    ['role' => 'user', 'content' => $question],
+                ],
+            ]);
+
+        if ($response->failed()) {
+            throw new RuntimeException('Falha ao sugerir tema: ' . $response->body());
+        }
+
+        $payload = json_decode($response->json('choices.0.message.content'), true);
+
+        return trim((string) ($payload['name'] ?? $question));
+    }
 }

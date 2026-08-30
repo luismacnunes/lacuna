@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class TopicResolver
 {
-    private const MERGE_THRESHOLD = 0.80;
+    private const MERGE_THRESHOLD = 0.85;
 
     public function __construct(
         private EmbeddingProvider $embeddings
@@ -16,34 +16,52 @@ class TopicResolver
 
     public function resolve(string $name, ?string $description = null): Topic
     {
-        $existing = $this->findSimilar($name . "\n" . $description);
+        $vector = $this->embeddings->embed($name);
+
+        $existing = $this->findByVector($vector);
 
         if ($existing) {
             return $existing;
         }
 
-        return Topic::create([
+        $topic = Topic::create([
             'name' => $name,
             'description' => $description,
         ]);
+
+        $this->storeEmbedding($topic, $vector);
+
+        return $topic;
     }
 
-    public function findSimilar(string $text): ?Topic
+    private function findByVector(array $vector): ?Topic
     {
-        $vector = '[' . implode(',', $this->embeddings->embed($text)) . ']';
+        $literal = $this->toLiteral($vector);
 
         $row = DB::selectOne(
-            'SELECT t.id, 1 - (ca.embedding <=> ?::vector) AS similarity
-             FROM topics t
-             JOIN curated_answers ca ON ca.topic_id = t.id
-             WHERE ca.embedding IS NOT NULL AND t.archived_at IS NULL
-             ORDER BY ca.embedding <=> ?::vector
+            'SELECT id, 1 - (embedding <=> ?::vector) AS similarity
+             FROM topics
+             WHERE embedding IS NOT NULL AND archived_at IS NULL
+             ORDER BY embedding <=> ?::vector
              LIMIT 1',
-            [$vector, $vector]
+            [$literal, $literal]
         );
 
         return $row && $row->similarity >= self::MERGE_THRESHOLD
             ? Topic::find($row->id)
             : null;
+    }
+
+    private function storeEmbedding(Topic $topic, array $vector): void
+    {
+        DB::statement(
+            'UPDATE topics SET embedding = ?::vector WHERE id = ?',
+            [$this->toLiteral($vector), $topic->id]
+        );
+    }
+
+    private function toLiteral(array $vector): string
+    {
+        return '[' . implode(',', $vector) . ']';
     }
 }
