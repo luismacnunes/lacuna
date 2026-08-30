@@ -24,7 +24,7 @@
         <p><textarea name="content" rows="10" cols="60" placeholder="Cola aqui o conteúdo" required>{{ old('content') }}</textarea></p>
         <p><textarea name="description" rows="3" cols="60" placeholder="Em duas linhas, do que se trata">{{ old('description') }}</textarea></p>
 
-        <button type="submit">Guardar</button>
+        <button type="submit">Inserir</button>
     </form>
 </body>
 </html>
