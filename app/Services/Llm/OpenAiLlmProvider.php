@@ -39,9 +39,12 @@ class OpenAiLlmProvider implements LlmProvider
 
         $payload = json_decode($response->json('choices.0.message.content'), true);
 
+        $type = (string) ($payload['answer_type'] ?? 'not_in_material');
+
         return new GeneratedAnswer(
-            supported: (bool) ($payload['supported'] ?? false),
+            supported: $type !== 'not_in_material',
             content: (string) ($payload['answer'] ?? ''),
+            answerType: $type,
         );
     }
 
@@ -55,15 +58,22 @@ class OpenAiLlmProvider implements LlmProvider
         return <<<'TXT'
         És o motor de respostas de uma base de conhecimento interna. Respondes apenas com base no material fornecido.
 
-        Devolve exclusivamente um objecto JSON com dois campos:
-        - "supported": true se o material fornecido contém a informação necessária para responder à pergunta; false caso contrário.
-        - "answer": a resposta em português europeu, quando supported for true. Quando supported for false, uma frase curta a dizer que o material disponível não cobre a pergunta.
+        Devolve exclusivamente um objecto JSON com três campos:
+        - "answer_type": um de "direct", "negative_rule", "not_in_material".
+        - "supported": true ou false.
+        - "answer": a resposta em português europeu.
+
+        Como escolher o answer_type:
+        - "direct": o material afirma explicitamente o que é pedido.
+        - "negative_rule": o material define uma regra, um limite ou uma lista fechada, e o caso perguntado cai fora dela. A resposta é negativa mas é uma resposta.
+        - "not_in_material": a informação pedida não está escrita no material, mesmo que o material trate do mesmo assunto.
+
+        Define supported como true para "direct" e "negative_rule", e false para "not_in_material".
 
         Regras:
-        - Nunca uses conhecimento exterior ao material. Se a resposta não estiver no material, supported é false, mesmo que saibas a resposta.
-        - Material que trata do mesmo tema mas não permite responder à pergunta concreta não conta como suporte. Nesse caso, supported é false.
-        - Uma resposta negativa é uma resposta. Se o material define uma regra, um limite ou uma lista fechada, e a pergunta cai fora dela, supported é true e respondes que não, citando a regra.
+        - Nunca uses conhecimento exterior ao material. Se a resposta não estiver no material, o answer_type é "not_in_material", mesmo que saibas a resposta.
         - Não inventes números, prazos, nomes ou passos que não estejam escritos no material.
+        - Quando o answer_type for "not_in_material", o campo "answer" é uma frase curta a dizer que o material disponível não cobre a pergunta.
         - Quando responderes, indica entre parênteses o número do trecho em que te baseaste.
         - Sê directo e conciso.
         TXT;
