@@ -161,6 +161,75 @@ Questions live in `tests/Fixtures/eval_questions.json`.
 
 </details>
 
+<details>
+<summary><b>Setup on Arch Linux</b></summary>
+
+<br>
+
+The official repositories don't carry pgvector, and PostgreSQL needs manual initialisation on Arch. Full sequence:
+
+**Packages**
+
+```bash
+sudo pacman -S php php-pgsql composer postgresql base-devel git
+```
+
+**Enable the PostgreSQL driver in PHP**
+
+Both extensions ship commented out:
+
+```bash
+sudo sed -i 's/^;extension=pdo_pgsql/extension=pdo_pgsql/; s/^;extension=pgsql/extension=pgsql/' /etc/php/php.ini
+php -m | grep pgsql
+```
+
+**Initialise and start the database cluster**
+
+```bash
+sudo -u postgres initdb -D /var/lib/postgres/data --locale=C.UTF-8 --encoding=UTF8
+sudo systemctl enable --now postgresql
+```
+
+`initdb` sets local connections to `trust` authentication, meaning any local process can connect as any role without a password. Fine for a development machine, not for anything else.
+
+**Create your role and the database**
+
+```bash
+sudo -u postgres createuser -s $USER
+createdb lacuna
+```
+
+With `trust` auth and a role matching your system user, `psql -d lacuna` connects without host or user flags.
+
+**Build pgvector from source**
+
+```bash
+cd /tmp
+git clone --branch v0.8.0 https://github.com/pgvector/pgvector.git
+cd pgvector
+make
+sudo make install
+```
+
+Verify it's available before migrating — the first migration enables the extension and will fail without it:
+
+```bash
+psql -d lacuna -c "SELECT name, default_version FROM pg_available_extensions WHERE name = 'vector';"
+```
+
+**Then the standard steps**
+
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate
+```
+
+Set `DB_USERNAME` to your system user and leave `DB_PASSWORD` empty in `.env`.
+
+</details>
+
 ## Roadmap
 
 | | Milestone |
