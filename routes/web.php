@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\CurationController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', fn () => redirect()->route('ask.index'))->name('dashboard');
@@ -26,6 +27,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/curate/{pending}', [CurationController::class, 'edit'])->name('curate.edit');
     Route::put('/curate/{pending}', [CurationController::class, 'update'])->name('curate.update');
     Route::delete('/curate/{pending}', [CurationController::class, 'dismiss'])->name('curate.dismiss');
+
+    Route::get('/review', [ReviewController::class, 'index'])->name('review.index');
+    Route::post('/review/{curatedAnswer}/confirm', [ReviewController::class, 'confirm'])->name('review.confirm');
+    Route::put('/review/{curatedAnswer}', [ReviewController::class, 'update'])->name('review.update');
+    Route::delete('/review/{curatedAnswer}', [ReviewController::class, 'destroy'])->name('review.destroy');
 });
 
 require __DIR__.'/auth.php';
