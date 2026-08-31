@@ -19,6 +19,16 @@
 
             <h4>Fontes</h4>
             <ol>
+                @foreach ($question->answer->curatedAnswers as $curated)
+                    <li>
+                        <strong>{{ $curated->topic->name }}</strong>
+                        <em>(resposta curada)</em>
+                        (semelhança {{ number_format($curated->pivot->similarity, 3) }})
+                        <br>
+                        <small>{{ Str::limit($curated->answer, 200) }}</small>
+                    </li>
+                @endforeach
+
                 @foreach ($question->answer->chunks as $chunk)
                     <li>
                         <strong>{{ $chunk->document->title }}</strong>

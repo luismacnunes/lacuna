@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 class ChunkRetriever
 {
     private const CURATED_BOOST = 0.15;
+    private const BOOST_FLOOR = 0.45;
 
     public function __construct(
         private EmbeddingProvider $embeddings
@@ -30,24 +31,24 @@ class ChunkRetriever
     private function searchCurated(string $vector, int $limit): array
     {
         $rows = DB::select(
-            'SELECT ca.id,
-                    ca.question || \'\n\n\' || ca.answer AS content,
-                    t.name AS title,
+            'SELECT ca.id, ca.question, ca.answer, t.name AS title,
                     1 - (ca.embedding <=> ?::vector) AS similarity
-             FROM curated_answers ca
-             JOIN topics t ON t.id = ca.topic_id
-             WHERE ca.embedding IS NOT NULL
-             ORDER BY ca.embedding <=> ?::vector
-             LIMIT ' . (int) $limit,
+            FROM curated_answers ca
+            JOIN topics t ON t.id = ca.topic_id
+            WHERE ca.embedding IS NOT NULL
+            ORDER BY ca.embedding <=> ?::vector
+            LIMIT ' . (int) $limit,
             [$vector, $vector]
         );
 
-        foreach ($rows as $row) {
-            $row->source = 'curated';
-            $row->rank = $row->similarity + self::CURATED_BOOST;
-        }
-
-        return $rows;
+        return array_map(fn ($row) => new RetrievedItem(
+            source: 'curated',
+            id: $row->id,
+            title: $row->title,
+            content: $row->question . "\n\n" . $row->answer,
+            similarity: (float) $row->similarity,
+            rank: (float) $row->similarity + ((float) $row->similarity >= self::BOOST_FLOOR ? self::CURATED_BOOST : 0.0),
+        ), $rows);
     }
 
     private function searchChunks(string $vector, int $limit): array
@@ -55,19 +56,21 @@ class ChunkRetriever
         $rows = DB::select(
             'SELECT c.id, c.content, d.title,
                     1 - (c.embedding <=> ?::vector) AS similarity
-             FROM chunks c
-             JOIN documents d ON d.id = c.document_id
-             WHERE c.embedding IS NOT NULL
-             ORDER BY c.embedding <=> ?::vector
-             LIMIT ' . (int) $limit,
+            FROM chunks c
+            JOIN documents d ON d.id = c.document_id
+            WHERE c.embedding IS NOT NULL
+            ORDER BY c.embedding <=> ?::vector
+            LIMIT ' . (int) $limit,
             [$vector, $vector]
         );
 
-        foreach ($rows as $row) {
-            $row->source = 'chunk';
-            $row->rank = $row->similarity;
-        }
-
-        return $rows;
+        return array_map(fn ($row) => new RetrievedItem(
+            source: 'chunk',
+            id: $row->id,
+            title: $row->title,
+            content: $row->content,
+            similarity: (float) $row->similarity,
+            rank: (float) $row->similarity,
+        ), $rows);
     }
 }

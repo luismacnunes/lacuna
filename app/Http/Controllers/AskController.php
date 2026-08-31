@@ -11,7 +11,7 @@ class AskController extends Controller
     public function index(Request $request)
     {
         $question = $request->filled('question')
-            ? Question::with('answer.chunks.document')->find($request->integer('question'))
+            ? Question::with('answer.chunks.document', 'answer.curatedAnswers.topic')->find($request->integer('question'))
             : null;
 
         return view('ask.index', ['question' => $question]);

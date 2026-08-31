@@ -5,6 +5,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\QueueController;
+use App\Http\Controllers\CurationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', fn () => redirect()->route('ask.index'))->name('dashboard');
