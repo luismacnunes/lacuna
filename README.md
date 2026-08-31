@@ -1,8 +1,11 @@
 <div align="center">
 
-# Lacuna
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/brand/lacuna-logo-tagline-white.svg">
+  <img src="docs/brand/lacuna-logo-tagline.svg" alt="Lacuna - knows what it doesn't know" width="320">
+</picture>
 
-**An internal knowledge base that knows what it doesn't know.**
+<br><br>
 
 Turns failed searches into work items, and interviews you about what you upload.
 
