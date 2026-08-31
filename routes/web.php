@@ -21,6 +21,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/documents', [DocumentController::class, 'store'])->name('documents.store');
 
     Route::get('/queue', [QueueController::class, 'index'])->name('queue.index');
+
+    Route::get('/curate/{pending}', [CurationController::class, 'edit'])->name('curate.edit');
+    Route::put('/curate/{pending}', [CurationController::class, 'update'])->name('curate.update');
+    Route::delete('/curate/{pending}', [CurationController::class, 'dismiss'])->name('curate.dismiss');
 });
 
 require __DIR__.'/auth.php';
