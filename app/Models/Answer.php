@@ -17,4 +17,9 @@ class Answer extends Model
     {
         return $this->belongsToMany(Chunk::class)->withPivot('similarity');
     }
+
+    public function curatedAnswers()
+    {
+        return $this->belongsToMany(CuratedAnswer::class)->withPivot('similarity');
+    }
 }

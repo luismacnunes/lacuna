@@ -6,7 +6,10 @@
 </head>
 <body>
     <h2>Por responder</h2>
-
+    @if (session('status'))
+        <p>{{ session('status') }}</p>
+    @endif
+    
     @forelse ($topics as $topic)
         <hr>
         <h3>
@@ -28,6 +31,7 @@
                     @if ($pending->origin === App\Enums\PendingOrigin::RealFailure)
                         <strong>(alguém perguntou isto)</strong>
                     @endif
+                    <a href="{{ route('curate.edit', $pending) }}">Responder</a>
                 </li>
             @endforeach
         </ul>
