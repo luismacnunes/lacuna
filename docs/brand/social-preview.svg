@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="Lacuna — an internal knowledge base that knows what it doesn't know">
+  <style>
+    .wordmark { font-family: 'Space Grotesk', 'Inter', 'DejaVu Sans', 'Helvetica Neue', Arial, sans-serif; font-weight: 500; font-size: 104px; letter-spacing: -3px; fill: #FFFFFF; }
+    .tagline { font-family: 'Space Grotesk', 'Inter', 'DejaVu Sans', 'Helvetica Neue', Arial, sans-serif; font-weight: 400; font-size: 30px; letter-spacing: 0.3px; fill: #9A9AA4; }
+    .meta { font-family: 'Space Grotesk', 'Inter', 'DejaVu Sans', 'Helvetica Neue', Arial, sans-serif; font-weight: 400; font-size: 22px; letter-spacing: 1.6px; fill: #5C5C66; }
+  </style>
+
+  <rect width="1280" height="640" fill="#14141A"/>
+
+  <g transform="translate(200,196) scale(1.6)">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M0 0 L69 0 L100 31 L100 100 L31 100 L0 69 Z M24 21 L44 21 L44 58 L79 58 L79 79 L24 79 Z"/>
+  </g>
+
+  <text class="wordmark" x="416" y="308">Lacuna</text>
+  <text class="tagline" x="422" y="366">Knows what it doesn't know</text>
+
+  <text class="meta" x="200" y="500">LARAVEL · POSTGRESQL · PGVECTOR</text>
+</svg>
