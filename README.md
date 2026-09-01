@@ -14,6 +14,7 @@ Turns failed searches into work items, and interviews you about what you upload.
 [![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20.svg?style=flat-square&logo=laravel&logoColor=white)](https://laravel.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-pgvector-4169E1.svg?style=flat-square&logo=postgresql&logoColor=white)](https://github.com/pgvector/pgvector)
 [![Status](https://img.shields.io/badge/status-in%20development-orange.svg?style=flat-square)](#roadmap)
+[![tests](https://github.com/luismacnunes/lacuna/actions/workflows/tests.yml/badge.svg)](https://github.com/luismacnunes/lacuna/actions/workflows/tests.yml)
 
 </div>
 
