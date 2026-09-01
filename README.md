@@ -5,9 +5,11 @@
   <img src="docs/brand/lacuna-logo-tagline.svg" alt="Lacuna - knows what it doesn't know" width="320">
 </picture>
 
-<br><br>
+<br>
 
-Turns failed searches into work items, and interviews you about what you upload.
+**A self-hosted knowledge base for small teams that keeps track of what's missing from it.**
+
+Built with Laravel and pgvector.
 
 [![License](https://img.shields.io/badge/license-MIT-green.svg?style=flat-square)](LICENSE)
 [![PHP](https://img.shields.io/badge/PHP-8.5-777BB4.svg?style=flat-square&logo=php&logoColor=white)](https://php.net)
@@ -20,105 +22,67 @@ Turns failed searches into work items, and interviews you about what you upload.
 
 ---
 
-Most knowledge bases are graveyards. Someone writes documentation once, it goes stale and nobody notices until a question goes unanswered.
+Internal documentation has a habit of going stale quietly. Someone writes it once, things change around it, and nobody finds out until a question goes unanswered.
 
-Lacuna inverts that: **the most valuable thing a knowledge base can tell you is what's missing from it.**
+Lacuna answers questions like any knowledge base. The difference is what it does when it can't: instead of a dead end, you get a task for someone to fill the gap.
 
 <!-- GIF of the ask -> gap -> queue cycle -->
 
-## The two mechanisms
+## What it does
 
-**It interviews you on ingestion.** When you add material, Lacuna reads it and asks three or four questions about what the document *doesn't* explain, the reasoning behind decisions, the exception cases, what to do when things break. Answer them whenever you have time. They queue up.
+🔍 **Answers with sources.** Ask in plain language, get an answer with the passages it came from, so you can check it.
 
-**It turns failed searches into work items.** When someone asks a question the material can't answer, that failure isn't a dead end, it becomes an item in the same queue, ranked *above* the auto-generated ones, because a real question has proven demand.
+🕳️ **Tries hard not to bluff.** When the material doesn't cover something, it's meant to say so rather than improvise. It gets this right most of the time, and the cases where it doesn't are the ones I care most about.
 
-The knowledge base grows around what people actually ask, not around what someone once guessed would be important.
+📋 **Turns gaps into a queue.** A question it couldn't answer becomes a task, ranked above the rest, because someone actually needed that answer.
+
+💬 **Asks you questions when you upload.** Drop in a document and it comes back with three or four things the document doesn't explain. Answer them whenever you have time.
+
+✍️ **Human answers rank first.** Write an answer to a queued question and it goes into the index, above the raw documents.
+
+🔔 **Flags answers for review.** Edit a source document and the curated answers in that topic get marked for a second look, with a one-click "still fine".
+
+🔌 **Swappable models.** OpenAI works out of the box. Embeddings and generation sit behind interfaces, so pointing it at a local model is a config change plus one class.
+
+## How it works
+
+Two loops, feeding each other.
+
+**Someone asks something.** If the material covers it, you get an answer with sources. If it doesn't, the system says so, and the question lands in the queue as work for someone.
+
+**Someone adds material.** It gets chunked, embedded, and the model reads it looking for holes: why was this decided, what are the exceptions, what happens when it breaks. Those questions land in the same queue too.
+
+Answer anything in the queue and it gets indexed. Next person to ask gets served.
+
+The base grows around what people ask, not around what someone guessed would matter.
 
 ## Why not just RAG over a folder
 
-RAG over existing documents has a hard ceiling: it can only surface what someone already wrote down. In a small team, most of what matters was never written, it lives in the head of whoever built the thing.
+Because RAG only finds what someone already wrote down, and in a small team a lot of what matters was never written. It's in the head of whoever built the thing.
 
-The ingestion interview is a cold-start mechanism for exactly that. You drop in a file with a one-line note, and the system does the work of figuring out what's missing from it.
+That's what the questions on upload are for. You drop in a file with a one-line note and the system does the work of figuring out what's missing.
 
-Tools like Tettra and Guru run the demand-driven half of this loop well. The supply-driven half, asking the author while the context is still fresh in their head is the part this project explores.
+Tettra and Guru already do the other half of this well, turning unanswered questions into articles. Interviewing the author while the context is still fresh is the part I haven't come across elsewhere, and it's the part this project is really about.
 
-## Pipeline
+## The hard bit
 
-```
-input ---> chunking ---> embeddings (queued) ---> pgvector
-   |
-   +------> question generation ------------------> pending queue
-                                                         ^
-question ---> retrieval ---> classification ---> answer   |
-                                   |                      |
-                                   +--- not in material ---+
-```
+Detecting that you *don't* know something is harder than answering.
 
-Every answer cites the chunks it came from. When the model can't answer from the material, it says so, and the failure is recorded with the reason it fired.
+The obvious approach is a distance threshold: if nothing close enough comes back, you don't have the answer. It doesn't hold up. In this corpus, a question with no answer anywhere scored **0.516**, while a question the docs answer in full scored **0.441**. No line separates them, because embedding distance tells you whether something is on-topic, not whether the answer is in there.
 
----
+What worked better was asking the model to *classify* rather than *judge*: `direct`, `negative_rule`, or `not_in_material`. Three labels, and the app decides from the label. Two rounds of explaining the same distinction in prose kept fixing one error and creating another.
 
-## Engineering notes
+There's more of it, including a ranking tweak that felt obviously right and quietly cost five points of recall until the eval harness caught it.
 
-Two decisions made against measurements rather than intuition. Both are reproducible with `php artisan lacuna:eval`.
+📐 **[Read the decision records →](docs/decisions/)** - five of them, with the numbers behind each one and the alternatives that didn't work.
 
-### Similarity thresholds don't separate "knows" from "doesn't know"
-
-The obvious way to detect a gap is a distance threshold. If nothing is close enough, the system doesn't know it. That fails.
-
-Measured against the demo corpus:
-
-| Question | Answerable? | Cosine similarity |
-|---|:---:|---:|
-| *"What warranty do we give on fitted parts?"* | ✗ nowhere in the corpus | **0.516** |
-| *"Where do I get data to work on my machine?"* | ✓ fully documented | **0.441** |
-
-There is no cut-off that separates the two populations. Embedding distance measures *topical proximity*, not whether an answer is present, a question can be squarely on-topic and completely unanswerable.
-
-The threshold survives in the code, demoted. It now exists only to skip an API call when nothing remotely related comes back. The real decision moved to the model.
-
-### Structured classification beats prompt instructions
-
-Getting a model to admit it can't answer is harder than it looks, and the failure modes sit on both sides.
-
-| Prompt version | Failure mode |
-|---|---|
-| Permissive | Answered questions the material didn't cover |
-| Restrictive | Refused questions the material answered *by exclusion*, "can I deploy on Friday?" when the material defines a Tuesday - Thursday window |
-| Restrictive + explicit rule | Ignored the rule; returned `supported: true` alongside an answer reading *"the material does not specify"* |
-
-Prose instructions kept trading one error for the other. What worked was removing the judgement call entirely: the model now returns `answer_type` as one of `direct`, `negative_rule`, or `not_in_material`, and the application derives support from that classification. The model's own `supported` flag is discarded.
-
-> A closed-set classification is a more reliable thing to ask a model for than adherence to a negative instruction about what *not* to write.
-
-### Retrieval quality: baseline vs. real embeddings
-
-The project ships a deterministic hash-based embedding provider so the pipeline runs without an API key. It also served as a control. Same corpus, same 20 questions, same code:
-
-| Provider | Correct source ranked #1 | Correct source in top 3 |
-|---|:---:|:---:|
-| Hash-based (`fake`) | 20% | 55% |
-| `text-embedding-3-small` | **80%** | **90%** |
-
-The gap is the value of semantic embeddings, isolated. Questions were deliberately written in the vocabulary people actually use, not the vocabulary of the documents.
-
----
-
-## Stack
-
-`Laravel 13` · `PHP 8.5` · `PostgreSQL 18 + pgvector` · `Blade` · `Pest`
-
-Embeddings and generation sit behind interfaces (`EmbeddingProvider`, `LlmProvider`), resolved through the service container and selected by environment variable. Swapping providers is a config change, not a refactor.
-
-## Getting started
+## Try it
 
 ```bash
 git clone git@github.com:luismacnunes/lacuna.git
 cd lacuna
-composer install
-npm install && npm run build
-cp .env.example .env
-php artisan key:generate
+composer install && npm install && npm run build
+cp .env.example .env && php artisan key:generate
 ```
 
 Create a PostgreSQL database with the `vector` extension available, point `.env` at it, then:
@@ -129,26 +93,12 @@ php artisan db:seed --class=DemoKnowledgeSeeder
 php artisan queue:work --stop-when-empty
 ```
 
-The demo corpus is fifteen documents of realistic internal documentation, with a matching set of evaluation questions.
+The seed data is fifteen documents of realistic internal docs, so you can start asking it things right away.
+
+**No API key?** Leave `EMBEDDING_DRIVER=fake` and everything except answer generation works, on a hash-based provider that fakes the vectors. Retrieval quality is much worse, but the pipeline runs end to end. For the real thing, set `EMBEDDING_DRIVER=openai`, add your `OPENAI_API_KEY`, and run `php artisan lacuna:reindex`.
 
 <details>
-<summary><b>Running without an API key</b></summary>
-
-<br>
-
-Set `EMBEDDING_DRIVER=fake` in `.env`. Ingestion, chunking, indexing and similarity search all work, the hash-based provider produces deterministic vectors from word overlap.
-
-Answer generation and gap detection need a real key. Set `EMBEDDING_DRIVER=openai` and `OPENAI_API_KEY`, then re-index:
-
-```bash
-php artisan lacuna:reindex
-php artisan queue:work --stop-when-empty
-```
-
-</details>
-
-<details>
-<summary><b>Evaluating retrieval quality</b></summary>
+<summary>Checking retrieval quality</summary>
 
 <br>
 
@@ -156,95 +106,108 @@ php artisan queue:work --stop-when-empty
 php artisan lacuna:eval
 ```
 
-Runs 20 questions with known correct sources against the current index and reports recall@1 and recall@3. Use it to compare embedding providers, chunking strategies, or prompt changes, the numbers in the tables above came from this command.
+Runs 20 questions with known correct sources and reports how often the right document came back first, and how often it came back in the top three. Useful for comparing embedding models, chunking strategies or prompt changes before and after.
+
+For reference on the demo corpus: the hash-based provider gets 20% and 55%. `text-embedding-3-small` gets 80% and 90%. It's a small corpus, so treat the numbers as a way to spot regressions rather than as a benchmark.
 
 Questions live in `tests/Fixtures/eval_questions.json`.
 
 </details>
 
 <details>
-<summary><b>Setup on Arch Linux</b></summary>
+<summary>Setup on Arch Linux</summary>
 
 <br>
 
-The official repositories don't carry pgvector, and PostgreSQL needs manual initialisation on Arch. Full sequence:
-
-**Packages**
+pgvector isn't in the official repos and PostgreSQL needs initialising by hand.
 
 ```bash
 sudo pacman -S php php-pgsql composer postgresql base-devel git
-```
 
-**Enable the PostgreSQL driver in PHP**
-
-Both extensions ship commented out:
-
-```bash
+# both PostgreSQL extensions ship commented out
 sudo sed -i 's/^;extension=pdo_pgsql/extension=pdo_pgsql/; s/^;extension=pgsql/extension=pgsql/' /etc/php/php.ini
-php -m | grep pgsql
-```
 
-**Initialise and start the database cluster**
-
-```bash
 sudo -u postgres initdb -D /var/lib/postgres/data --locale=C.UTF-8 --encoding=UTF8
 sudo systemctl enable --now postgresql
-```
-
-`initdb` sets local connections to `trust` authentication, meaning any local process can connect as any role without a password. Fine for a development machine, not for anything else.
-
-**Create your role and the database**
-
-```bash
 sudo -u postgres createuser -s $USER
 createdb lacuna
+
+# pgvector from source
+cd /tmp && git clone --branch v0.8.0 https://github.com/pgvector/pgvector.git
+cd pgvector && make && sudo make install
 ```
 
-With `trust` auth and a role matching your system user, `psql -d lacuna` connects without host or user flags.
+`initdb` sets local connections to `trust`, so any local process can connect as any role without a password. Fine on a dev box, not anywhere else. It also means `psql -d lacuna` works with no flags.
 
-**Build pgvector from source**
+Check pgvector is there before migrating, because the first migration enables it:
 
 ```bash
-cd /tmp
-git clone --branch v0.8.0 https://github.com/pgvector/pgvector.git
-cd pgvector
-make
-sudo make install
+psql -d lacuna -c "SELECT name FROM pg_available_extensions WHERE name = 'vector';"
 ```
 
-Verify it's available before migrating — the first migration enables the extension and will fail without it:
-
-```bash
-psql -d lacuna -c "SELECT name, default_version FROM pg_available_extensions WHERE name = 'vector';"
-```
-
-**Then the standard steps**
-
-```bash
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate
-```
-
-Set `DB_USERNAME` to your system user and leave `DB_PASSWORD` empty in `.env`.
+Then set `DB_USERNAME` to your system user, leave `DB_PASSWORD` empty, and carry on.
 
 </details>
 
+<details>
+<summary>Setup on macOS</summary>
+
+<br>
+
+Anything that serves PostgreSQL over TCP works. If you use Yerd, note it doesn't do Unix sockets, so every `psql` and `createdb` needs the connection flags:
+
+```bash
+createdb -h 127.0.0.1 -p 5432 -U postgres lacuna
+psql -h 127.0.0.1 -p 5432 -U postgres -d lacuna -c "SELECT name FROM pg_available_extensions WHERE name = 'vector';"
+```
+
+You'll also want `libpq` on your PATH for `psql` itself:
+
+```bash
+brew install libpq
+echo 'export PATH="/opt/homebrew/opt/libpq/bin:$PATH"' >> ~/.zshrc
+```
+
+</details>
+
+## What it doesn't do yet
+
+Worth knowing before you point it at anything real.
+
+- **No permissions.** Everyone who can log in sees everything.
+- **Plain text and pasted code only.** PDF and Word aren't wired up.
+- **Answers aren't versioned.** Editing a curated answer overwrites the old one.
+- **Staleness is coarse.** A changed document flags every curated answer in its topic, not just the ones that actually depended on it. Deliberate, and [explained here](docs/decisions/005-staleness-at-topic-level.md).
+- **Your documents leave your network** with `EMBEDDING_DRIVER=openai`. The app self-hosts, the model doesn't. Point it at a local model if that matters.
+- **Nobody's running this in production**, including me. It works and it's tested, but it hasn't met real users yet.
+
+## Built with
+
+Laravel 13, PHP 8.5, PostgreSQL with pgvector, Blade, Pest.
+
+Embeddings and text generation sit behind interfaces, wired through the service container and picked by an env variable. That's also what makes the test suite cheap to run: a fake provider stands in for both, so nothing hits an API.
+
 ## Roadmap
 
-| | Milestone |
+| | |
 |:---:|---|
-| ✅ | Ingestion, chunking, queued embeddings |
-| ✅ | Vector search with visible similarity scores |
-| ✅ | Answer generation with citations and gap classification |
-| ✅ | Topics, pending queue, ingestion interview |
-| ⬜ | Semantic deduplication of queue items |
-| ⬜ | Curation, human-written answers, indexed above raw chunks |
-| ⬜ | Staleness, source hash changes flag derived answers for review |
-| ⬜ | Coverage metrics over time |
-| ⬜ | Per-area permissions |
+| ✅ | Upload, chunking, embeddings on a queue |
+| ✅ | Search with visible similarity scores |
+| ✅ | Answers with citations, and knowing when not to answer |
+| ✅ | Topics, the pending queue, questions on upload |
+| ✅ | Curation, human answers ranked above raw documents |
+| ✅ | Flagging answers for review when their sources change |
+| ✅ | Test suite and CI |
+| ⬜ | Coverage over time, the chart that shows the base filling in |
+| ⬜ | Version history on curated answers |
+| ⬜ | Grouping near-duplicate questions inside a topic |
+| ⬜ | Permissions per area |
+| ⬜ | PDF and Word ingestion |
+
+## Contributing
+
+Bug reports and arguments about the design are both welcome. The reasoning behind each decision is in [docs/decisions](docs/decisions/), worth a look first, since the alternative you're about to suggest may already have been tried and measured. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Licence
 
-MIT, see [LICENSE](LICENSE).
+MIT. Do what you like with it.

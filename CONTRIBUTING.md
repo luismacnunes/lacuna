@@ -1,24 +1,24 @@
 # Contributing
 
-Lacuna is a personal project built to explore a specific idea: that a knowledge base should surface what it doesn't know. It's developed in the open, but it isn't looking for feature contributions at this stage.
+Lacuna is a personal project exploring one idea: that a knowledge base should keep track of what it doesn't know, not just what it does. It's built in the open, but it isn't looking for feature contributions yet.
 
-That said, some things are genuinely welcome.
+Some things are genuinely useful though.
 
-## What's useful
+## What helps
 
-**Bug reports.** If something breaks, an issue with the steps to reproduce it is valuable.
+**Bug reports.** If something breaks, an issue with steps to reproduce it is worth a lot.
 
-**Questions about the approach.** The gap-detection design is the interesting part of this project and it isn't settled. If you've built something similar and disagree with a decision, open an issue, the reasoning behind each choice is in `docs/decisions/`.
+**Arguments about the design.** Gap detection is the interesting part of this and it isn't settled. If you've built something similar and think a decision is wrong, open an issue. The reasoning behind each one is in [`docs/decisions/`](docs/decisions/), worth a look first since the alternative you're about to suggest may already have been tried.
 
-**Retrieval evaluation.** If you run `php artisan lacuna:eval` against a different corpus, different chunking strategy, or a different embedding model, the numbers are interesting. Especially in languages other than Portuguese and English.
+**Evaluation numbers.** If you run `php artisan lacuna:eval` against a different corpus, a different chunking strategy or a different embedding model, I'd like to see the results. Especially in languages other than Portuguese and English, since that's all it's been tested on.
 
-## What isn't, right now
+## What doesn't, right now
 
-Feature pull requests. The roadmap in the README is deliberate and the ordering matters, several items depend on decisions that haven't been made yet. If you want to build one of them, open an issue first so we don't both write the same thing differently.
+Feature pull requests. The roadmap ordering is deliberate and several items depend on decisions I haven't made yet. If you want to build one, open an issue first so we don't write the same thing twice, differently.
 
-## Setting up
+## Getting set up
 
-See the README. The short version:
+Full instructions are in the README. Short version:
 
 ```bash
 composer install
@@ -29,24 +29,24 @@ php artisan migrate
 php artisan db:seed --class=DemoKnowledgeSeeder
 ```
 
-Set `EMBEDDING_DRIVER=fake` to run the pipeline without an API key.
+Leave `EMBEDDING_DRIVER=fake` to run the pipeline without an API key.
 
 ## Before opening a pull request
 
-Run the test suite:
+Run the tests:
 
 ```bash
 ./vendor/bin/pest
 ```
 
-If your change touches retrieval, chunking, or the answer prompt, also run:
+If your change touches retrieval, chunking or the answer prompt, run the eval too:
 
 ```bash
 php artisan lacuna:eval
 ```
 
-and include the before-and-after numbers in the pull request. A change that improves one question and quietly breaks three others is the failure mode this project is built to catch.
+and put the before and after numbers in the PR. A change that improves one question and quietly breaks three others is the exact failure this project keeps running into, so it's worth checking.
 
-## Commit messages
+## Commits
 
-First line under 72 characters, imperative mood, describing what the commit does. Body explaining why, when the why isn't obvious. Known limitations introduced by a change belong in the body.
+First line under 72 characters, imperative, saying what the commit does. Body explaining why, when the why isn't obvious. If the change introduces a known limitation, that goes in the body too.

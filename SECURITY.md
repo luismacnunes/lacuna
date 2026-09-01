@@ -1,32 +1,32 @@
 # Security policy
 
-## Reporting a vulnerability
+## Reporting something
 
-Report security issues privately through [GitHub's security advisory form](https://github.com/luismacnunes/lacuna/security/advisories/new) rather than opening a public issue.
+Use [GitHub's private advisory form](https://github.com/luismacnunes/lacuna/security/advisories/new) rather than opening a public issue.
 
-I'll acknowledge within a few days. This is a personal project, not a commercial product, so there's no formal response-time commitment beyond that.
+I'll get back to you within a few days. This is a personal project rather than a commercial product, so that's the only commitment I can make.
 
 ## Scope
 
-Lacuna is designed to run inside a trusted network with authenticated users. It is not hardened for public internet exposure and should not be deployed that way without additional work.
+Lacuna is built to run inside a trusted network with authenticated users. It isn't hardened for the public internet and shouldn't be deployed that way without more work than currently exists.
 
-Issues in scope:
+In scope:
 
-- Anything that lets an authenticated user read material they shouldn't have access to
-- Prompt injection through uploaded documents that changes the system's behaviour for other users
-- Leakage of the API key through logs, error pages, or generated output
-- The usual web application classes: injection, XSS, CSRF, insecure direct object references
+- Anything letting a logged-in user read material they shouldn't
+- Prompt injection through an uploaded document that changes behaviour for other users
+- API keys leaking through logs, error pages or generated output
+- The usual web classes: injection, XSS, CSRF, insecure direct object references
 
 Out of scope:
 
-- Missing per-area permissions. This is a known gap and it's on the roadmap. All authenticated users currently see all material.
-- Attacks that require access to the server or database
-- Denial of service through large uploads or high question volume
+- Missing per-area permissions. Known gap, on the roadmap. Right now everyone who can log in sees everything.
+- Anything needing access to the server or the database
+- Denial of service through large uploads or question volume
 
-## For anyone running this
+## Before you point it at real data
 
-Two things worth knowing before you point it at real data.
+**Your material leaves your network.** With `EMBEDDING_DRIVER=openai`, document text goes to OpenAI to be embedded, and retrieved chunks go again when an answer is generated. If your documentation can't leave your infrastructure, use a local model, the provider interfaces exist for exactly this.
 
-**Your material goes to a third party.** With `EMBEDDING_DRIVER=openai`, document text is sent to OpenAI for embedding, and retrieved chunks are sent again when generating answers. If your internal documentation can't leave your infrastructure, run a local model instead, the provider interfaces exist for exactly this reason.
+**The `.env` holds a live API key.** It's gitignored by default, but check before pushing, and set a spending limit on the key.
 
-**The `.env` holds a live API key.** It's gitignored by default. Check that it still is before pushing, and set a spending limit on the key.
+**Nobody's running this in production**, including me. It's tested, but it hasn't been exposed to real users or real load.
