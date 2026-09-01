@@ -1,0 +1,63 @@
+name: Bug report
+description: Something isn't working as documented
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add a document with...
+        2. Ask "..."
+        3. The queue shows...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part
+      options:
+        - Ingestion and chunking
+        - Embeddings and indexing
+        - Retrieval and search
+        - Answer generation
+        - Topics and pending queue
+        - Setup and installation
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: driver
+    attributes:
+      label: Embedding driver
+      options:
+        - openai
+        - fake
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: PHP version, PostgreSQL version, pgvector version, operating system.
+      placeholder: PHP 8.5, PostgreSQL 18, pgvector 0.8.5, macOS
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Error messages or log output. Remove your API key before pasting.
+      render: shell
