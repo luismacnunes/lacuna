@@ -7,6 +7,7 @@ use App\Http\Controllers\SearchController;
 use App\Http\Controllers\QueueController;
 use App\Http\Controllers\CurationController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\MetricsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', fn () => redirect()->route('ask.index'))->name('dashboard');
@@ -32,6 +33,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/review/{curatedAnswer}/confirm', [ReviewController::class, 'confirm'])->name('review.confirm');
     Route::put('/review/{curatedAnswer}', [ReviewController::class, 'update'])->name('review.update');
     Route::delete('/review/{curatedAnswer}', [ReviewController::class, 'destroy'])->name('review.destroy');
+
+    Route::get('/metrics', [MetricsController::class, 'index'])->name('metrics.index');
 });
 
 require __DIR__.'/auth.php';
