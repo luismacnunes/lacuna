@@ -40,6 +40,9 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      - name: Build assets
+        run: npm ci && npm run build
+
       - name: Run tests
         env:
           DB_CONNECTION: pgsql
