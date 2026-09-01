@@ -1,0 +1,33 @@
+name: Retrieval or design discussion
+description: Question the approach, or share evaluation results from a different setup
+labels: ["design"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The reasoning behind each design decision is in `docs/decisions/`. Worth a look before opening this, the alternative you're about to suggest may already have been tried and measured.
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of input
+      options:
+        - Evaluation results from a different corpus or model
+        - Disagreement with a design decision
+        - A failure case the current design doesn't handle
+    validations:
+      required: true
+
+  - type: textarea
+    id: detail
+    attributes:
+      label: Detail
+      description: If you're reporting evaluation results, include the corpus size, language, embedding model, chunking settings, and the recall numbers.
+    validations:
+      required: true
+
+  - type: textarea
+    id: tradeoff
+    attributes:
+      label: What it trades off
+      description: Every change to gap detection moves error from one side to the other. What does your suggestion make worse?

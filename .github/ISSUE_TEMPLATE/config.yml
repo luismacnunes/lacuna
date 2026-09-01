@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: How a decision was made
+    url: https://github.com/luismacnunes/lacuna/tree/main/docs/decisions
+    about: The reasoning behind the gap-detection design, with the measurements behind each choice.
