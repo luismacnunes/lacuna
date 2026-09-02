@@ -1,3 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Figtree:wght@400..700&display=swap');
+ 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+ 
+/* -------------------------------------------------------
+   Tokens
+------------------------------------------------------- */
+ 
+@layer base {
+    :root {
+        --paper: #FAF7F2;
+        --ink: #201D1A;
+        --sub: #6E675D;
+        --faint: #A39A8C;
+        --line: #E9E2D6;
+        --coral: #D85A30;
+    }
+ 
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --paper: #191713;
+            --ink: #EDE9E2;
+            --sub: #9A9184;
+            --faint: #7A7365;
+            --line: #332E27;
+            --coral: #E0693F;
+        }
+    }
+ 
+    body {
+        background: var(--paper);
+        color: var(--ink);
+        font-family: Figtree, sans-serif;
+    }
+ 
+    a {
+        color: inherit;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        text-decoration-color: rgba(128, 120, 108, .45);
+        cursor: pointer;
+    }
+ 
+    a:hover {
+        text-decoration-color: currentColor;
+    }
+ 
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--faint);
+        opacity: 1;
+    }
+ 
+    input:focus,
+    textarea:focus {
+        border-bottom-color: var(--ink);
+    }
+}
+ 
+/* -------------------------------------------------------
+   Typography
+------------------------------------------------------- */
+ 
+@layer components {
+ 
+    /* Ask input */
+    .t-ask {
+        font: 400 40px 'Bricolage Grotesque', sans-serif;
+    }
+ 
+    /* Question at the top of answer */
+    .t-question {
+        font: 500 26px/1.35 'Bricolage Grotesque', sans-serif;
+    }
+ 
+    /* Smaller question */
+    .t-question-sm {
+        font: 500 24px/1.4 'Bricolage Grotesque', sans-serif;
+    }
+ 
+    /* Page titles */
+    .t-title {
+        font: 600 26px 'Bricolage Grotesque', sans-serif;
+    }
+ 
+    /* Verdict */
+    .t-verdict {
+        font: 600 29px 'Bricolage Grotesque', sans-serif;
+    }
+ 
+    /* Header wordmark */
+    .t-wordmark {
+        font: 700 17px 'Bricolage Grotesque', sans-serif;
+    }
+ 
+    /* Generated answers */
+    .t-prose {
+        font-size: 17.5px;
+        line-height: 1.66;
+    }
+ 
+    /* Explanatory paragraphs */
+    .t-lead {
+        font-size: 15.5px;
+        line-height: 1.62;
+    }
+ 
+    /* Subject names */
+    .t-subject {
+        font-size: 16px;
+        font-weight: 600;
+    }
+ 
+    /* Question in a list */
+    .t-row {
+        font-size: 15px;
+        line-height: 1.45;
+    }
+ 
+    /* Excerpts and secondary descriptions */
+    .t-excerpt {
+        font-size: 14.5px;
+        line-height: 1.55;
+    }
+ 
+    /* Field labels */
+    .t-label {
+        font-size: 12.5px;
+        font-weight: 700;
+    }
+ 
+    /* Section rules */
+    .t-rule {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+    }
+ 
+    /* Meta labels */
+    .t-meta {
+        font-size: 12.5px;
+    }
+ 
+    /* Small meta labels */
+    .t-meta-sm {
+        font-size: 11.5px;
+    }
+ 
+    /* -------------------------------------------------------
+       Form controls
+    ------------------------------------------------------- */
+ 
+    .field {
+        width: 100%;
+        box-sizing: border-box;
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--line);
+        color: var(--ink);
+        outline: none;
+        padding: 7px 0;
+        font: 400 15px Figtree, sans-serif;
+    }
+ 
+    .field-area {
+        @apply field;
+        font: 400 16px/1.6 Figtree, sans-serif;
+        padding: 10px 0;
+        resize: vertical;
+        min-height: 170px;
+    }
+ 
+    /* Ask input */
+    .field-ask {
+        @apply field;
+        font: 400 24px 'Bricolage Grotesque', sans-serif;
+        border-bottom: 2px solid var(--ink);
+        padding: 16px 2px;
+    }
+ 
+    /* -------------------------------------------------------
+       Actions
+    ------------------------------------------------------- */
+ 
+    .btn {
+        background: var(--ink);
+        color: var(--paper);
+        padding: 11px 20px;
+        font-size: 13.5px;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid var(--ink);
+        cursor: pointer;
+    }
+ 
+    .btn:disabled,
+    .btn-disabled {
+        background: transparent;
+        color: var(--faint);
+        border: 1px solid var(--line);
+        cursor: not-allowed;
+    }
+ 
+    /* Secondary action */
+    .btn-outline {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--ink);
+        padding: 7px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        cursor: pointer;
+    }
+ 
+    .link-quiet {
+        color: var(--faint);
+        text-decoration-color: rgba(128, 120, 108, .3);
+    }
+}
+ 
