@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Question;
 use App\Services\AnswerQuestion;
 use Illuminate\Http\Request;
+use App\Models\Chunk;
+use App\Models\Topic;
 
 class AskController extends Controller
 {
@@ -14,7 +16,12 @@ class AskController extends Controller
             ? Question::with('answer.chunks.document', 'answer.curatedAnswers.topic')->find($request->integer('question'))
             : null;
 
-        return view('ask.index', ['question' => $question]);
+        return view('ask.index', [
+            'question' => $question,
+            'passages' => Chunk::count(),
+            'subjects' => Topic::whereNull('archived_at')->count(),
+            'examples' => collect(),
+        ]);
     }
 
     public function store(Request $request, AnswerQuestion $answerer)

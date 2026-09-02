@@ -1,36 +1,51 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ isset($title) ? $title . ' — Lacuna' : 'Lacuna' }}</title>
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="alternate icon" href="/favicon-32.png" sizes="32x32">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body>
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100">
-            @include('layouts.navigation')
+<header class="flex items-center px-9 py-[18px] border-b border-line">
+    <a href="{{ route('ask.index') }}" class="flex items-center gap-[11px] no-underline">
+        <x-mark :size="20"/>
+        <span class="t-wordmark">Lacuna</span>
+    </a>
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+    <nav class="ml-auto flex gap-[26px] text-sm font-medium items-baseline">
+        <x-nav-link :href="route('ask.index')" :active="request()->routeIs('ask.*')">
+            Ask
+        </x-nav-link>
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
-        </div>
-    </body>
+        <x-nav-link :href="route('queue.index')" :active="request()->routeIs('queue.*', 'curate.*')">
+            Queue @if ($openCount ?? 0) {{ $openCount }} @endif
+        </x-nav-link>
+
+        <x-nav-link :href="route('review.index')" :active="request()->routeIs('review.*')">
+            Review @if ($reviewCount ?? 0) {{ $reviewCount }} @endif
+        </x-nav-link>
+
+        <x-nav-link :href="route('metrics.index')" :active="request()->routeIs('metrics.*')">
+            Coverage
+        </x-nav-link>
+
+        <x-nav-link :href="route('documents.create')" :active="request()->routeIs('documents.*')">
+            Add material
+        </x-nav-link>
+
+        <x-nav-link :href="route('map.index')" :active="request()->routeIs('map.*')">
+            Map
+        </x-nav-link>
+    </nav>
+</header>
+
+{{ $slot }}
+
+</body>
 </html>

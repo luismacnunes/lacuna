@@ -35,6 +35,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/review/{curatedAnswer}', [ReviewController::class, 'destroy'])->name('review.destroy');
 
     Route::get('/metrics', [MetricsController::class, 'index'])->name('metrics.index');
+
+    Route::view('/map', 'map.index')->name('map.index');
 });
 
 require __DIR__.'/auth.php';
