@@ -55,4 +55,11 @@ class ReviewController extends Controller
 
         return back()->with('status', 'Resposta removida.');
     }
+
+    public function edit(CuratedAnswer $curatedAnswer)
+    {
+        $curatedAnswer->load(['topic', 'flaggedByDocument']);
+
+        return view('review.edit', ['answer' => $curatedAnswer]);
+    }
 }
