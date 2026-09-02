@@ -13,14 +13,23 @@ class AskController extends Controller
     public function index(Request $request)
     {
         $question = $request->filled('question')
-            ? Question::with('answer.chunks.document', 'answer.curatedAnswers.topic')->find($request->integer('question'))
-            : null;
+        ? Question::with('answer.chunks.document', 'answer.curatedAnswers.topic')->find($request->integer('question'))
+        : null;
+        
+        $topic = null;
+        $pending = null;
+
+        if ($question && ! $question->answer) {
+            $pending = $question->pendingQuestion()->with('topic')->first();
+            $topic = $pending?->topic;
+        }
 
         return view('ask.index', [
             'question' => $question,
+            'topic' => $topic,
+            'pending' => $pending,
             'passages' => Chunk::count(),
             'subjects' => Topic::whereNull('archived_at')->count(),
-            'examples' => collect(),
         ]);
     }
 

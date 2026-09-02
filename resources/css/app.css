@@ -67,7 +67,7 @@
  
     /* Ask input */
     .t-ask {
-        font: 400 29px 'Bricolage Grotesque', sans-serif;
+        font: 400 40px 'Bricolage Grotesque', sans-serif;
     }
  
     /* Question at the top of answer */
@@ -175,9 +175,10 @@
  
     /* Ask input */
     .field-ask {
-        @apply field t-ask;
+        @apply field;
+        font: 400 24px 'Bricolage Grotesque', sans-serif;
         border-bottom: 2px solid var(--ink);
-        padding: 12px 2px;
+        padding: 16px 2px;
     }
  
     /* -------------------------------------------------------

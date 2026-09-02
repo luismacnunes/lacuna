@@ -19,4 +19,9 @@ class Question extends Model
     {
         return $this->hasOne(Answer::class);
     }
+
+    public function pendingQuestion()
+    {
+        return $this->hasOne(PendingQuestion::class);
+    }
 }
