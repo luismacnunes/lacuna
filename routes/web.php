@@ -8,6 +8,7 @@ use App\Http\Controllers\QueueController;
 use App\Http\Controllers\CurationController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\MetricsController;
+use App\Http\Controllers\MapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', fn () => redirect()->route('ask.index'))->name('dashboard');
@@ -36,7 +37,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/metrics', [MetricsController::class, 'index'])->name('metrics.index');
 
-    Route::view('/map', 'map.index')->name('map.index');
+    Route::get('/map', [MapController::class, 'index'])->name('map.index');
 
     Route::get('/review/{curatedAnswer}/edit', [ReviewController::class, 'edit'])->name('review.edit');
 });
