@@ -16,6 +16,7 @@ export default {
                 faint: 'var(--faint)',
                 line: 'var(--line)',
                 coral: 'var(--coral)',
+                fill: 'var(--fill)',
             },
 
             fontFamily: {

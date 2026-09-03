@@ -1,63 +1,59 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="utf-8">
-    <title>Lacuna — Cobertura</title>
-</head>
-<body>
-    <h2>Cobertura ao longo do tempo</h2>
+<x-app-layout>
+    <div class="max-w-coverage mx-auto mt-11 px-8 pb-20">
+        <div class="t-title">Coverage</div>
+        <div class="text-[13px] text-sub mt-1.5">
+            The share of questions the base could answer, week by week. Ink is answered; coral is what it couldn't — each week's new gaps.
+        </div>
 
-    @if ($weeks->isEmpty())
-        <p>Ainda não há perguntas suficientes para mostrar uma linha.</p>
-    @else
-        @php
-            $w = 640; $h = 220; $pad = 40;
-            $plotW = $w - $pad * 2;
-            $plotH = $h - $pad * 2;
-            $n = $weeks->count();
+        @if ($weeks->isEmpty())
+            <p class="t-lead text-sub mt-12">
+                Not enough questions yet to draw a line. Ask a few things and this fills in.
+            </p>
+        @else
+            <div class="grid gap-1.5 items-end h-[300px] border-b border-line mt-12"
+                style="grid-template-columns: repeat({{ $weeks->count() }}, minmax(0, 46px))">
+                @foreach ($weeks as $week)
+                    @php
+                        $rate = $week['rate'];
+                        $cut = 9;
+                    @endphp
 
-            $points = $weeks->values()->map(function ($week, $i) use ($n, $pad, $plotW, $plotH) {
-                $x = $n > 1 ? $pad + ($i / ($n - 1)) * $plotW : $pad + $plotW / 2;
-                $y = $pad + $plotH - ($week['rate'] / 100) * $plotH;
-                return round($x, 1) . ',' . round($y, 1);
-            })->implode(' ');
-        @endphp
+                    <svg viewBox="0 0 46 300" preserveAspectRatio="none" class="h-full w-full" title="...">
 
-        <svg viewBox="0 0 {{ $w }} {{ $h }}" width="{{ $w }}" height="{{ $h }}" role="img">
-            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $w - $pad }}" y2="{{ $pad }}" stroke="#ddd" />
-            <line x1="{{ $pad }}" y1="{{ $pad + $plotH / 2 }}" x2="{{ $w - $pad }}" y2="{{ $pad + $plotH / 2 }}" stroke="#ddd" />
-            <line x1="{{ $pad }}" y1="{{ $pad + $plotH }}" x2="{{ $w - $pad }}" y2="{{ $pad + $plotH }}" stroke="#999" />
+                        {{-- The share it couldn't answer --}}
+                        <path d="M0 0 L{{ 46 - $cut }} 0 L46 {{ $cut }} L46 {{ 300 - ($rate * 3) }} L0 {{ 300 - ($rate * 3) }} Z"
+                            fill="var(--coral)" fill-opacity="0.22"/>
 
-            <text x="{{ $pad - 8 }}" y="{{ $pad + 4 }}" text-anchor="end" font-size="11">100%</text>
-            <text x="{{ $pad - 8 }}" y="{{ $pad + $plotH / 2 + 4 }}" text-anchor="end" font-size="11">50%</text>
-            <text x="{{ $pad - 8 }}" y="{{ $pad + $plotH + 4 }}" text-anchor="end" font-size="11">0%</text>
+                        {{-- The answered share --}}
+                        <rect x="0" y="{{ 300 - ($rate * 3) }}" width="46" height="{{ $rate * 3 }}"
+                            fill="var(--fill)"/>
 
-            <polyline points="{{ $points }}" fill="none" stroke="#14141A" stroke-width="2" />
+                        {{-- The outline, over both --}}
+                        <path d="M0 0 L{{ 46 - $cut }} 0 L46 {{ $cut }} L46 300 L0 300 Z"
+                            fill="none" stroke="var(--coral)" stroke-width="1"
+                            vector-effect="non-scaling-stroke"/>
+                    </svg>
+                @endforeach
+            </div>
 
-            @foreach ($weeks->values() as $i => $week)
-                @php
-                    [$cx, $cy] = explode(',', explode(' ', $points)[$i]);
-                @endphp
-                <circle cx="{{ $cx }}" cy="{{ $cy }}" r="3" fill="#14141A" />
-            @endforeach
-        </svg>
+            <div class="grid gap-1.5 mt-2"
+                 style="grid-template-columns: repeat({{ $weeks->count() }}, 1fr)">
+                @foreach ($weeks as $i => $week)
+                    <span class="text-[10.5px] text-faint whitespace-nowrap">
+                        @if ($i === 0 || $i === $weeks->count() - 1 || $i % 4 === 0)
+                            {{ $week['week']->format('j M') }}
+                        @endif
+                    </span>
+                @endforeach
+            </div>
 
-        <table border="1" cellpadding="6" cellspacing="0">
-            <tr>
-                <th>Semana</th>
-                <th>Perguntas</th>
-                <th>Respondidas</th>
-                <th>Cobertura</th>
-            </tr>
-            @foreach ($weeks as $week)
-                <tr>
-                    <td>{{ $week['week']->format('d/m/Y') }}</td>
-                    <td>{{ $week['total'] }}</td>
-                    <td>{{ $week['answered'] }}</td>
-                    <td>{{ $week['rate'] }}%</td>
-                </tr>
-            @endforeach
-        </table>
-    @endif
-</body>
-</html>
+            @php $last = $weeks->last(); @endphp
+            <div class="text-[13px] text-sub mt-[30px]">
+                Last week it answered {{ $last['answered'] }} of {{ $last['total'] }} — {{ $last['rate'] }}%.
+                @if ($last['total'] > $last['answered'])
+                    The {{ $last['total'] - $last['answered'] }} it couldn't are <a href="{{ route('queue.index') }}">in the queue</a>.
+                @endif
+            </div>
+        @endif
+    </div>
+</x-app-layout>

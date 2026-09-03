@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/metrics', [MetricsController::class, 'index'])->name('metrics.index');
 
     Route::view('/map', 'map.index')->name('map.index');
+
+    Route::get('/review/{curatedAnswer}/edit', [ReviewController::class, 'edit'])->name('review.edit');
 });
 
 require __DIR__.'/auth.php';
