@@ -16,6 +16,7 @@
         --faint: #A39A8C;
         --line: #E9E2D6;
         --coral: #D85A30;
+        --fill: #4A423A;
     }
  
     @media (prefers-color-scheme: dark) {
@@ -26,6 +27,7 @@
             --faint: #7A7365;
             --line: #332E27;
             --coral: #E0693F;
+            --fill: #BAB2A6;
         }
     }
  
@@ -147,6 +149,10 @@
     /* Small meta labels */
     .t-meta-sm {
         font-size: 11.5px;
+    }
+
+    .bar {
+        clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
     }
  
     /* -------------------------------------------------------
