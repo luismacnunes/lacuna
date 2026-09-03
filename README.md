@@ -42,6 +42,10 @@ Lacuna answers questions like any knowledge base. The difference is what it does
 
 🔔 **Flags answers for review.** Edit a source document and the curated answers in that topic get marked for a second look, with a one-click "still fine".
 
+🗺️ **Shows you where the base is thin.** Every passage projected onto two dimensions, with the unanswered questions dropped into the same space. Distance means related, so the empty regions are the gaps.
+
+📈 **Tracks whether it's working.** The share of questions answered, week by week. The one number that says whether the loop is closing.
+
 🔌 **Swappable models.** OpenAI works out of the box. Embeddings and generation sit behind interfaces, so pointing it at a local model is a config change plus one class.
 
 ## How it works
@@ -76,6 +80,20 @@ There's more of it, including a ranking tweak that felt obviously right and quie
 
 📐 **[Read the decision records →](docs/decisions/)** - five of them, with the numbers behind each one and the alternatives that didn't work.
 
+## The map
+
+The same embeddings that make retrieval work also give you a map for free. Project them onto two dimensions and you get a space where distance means related — documents about the same subject sit together, unrelated ones sit apart.
+
+The interesting part is the empty space. A question nobody could answer lands somewhere in that space, and where it lands tells you what kind of work it is:
+
+**Surrounded by passages** — a detail missing from a subject the team already covers. Whoever wrote the rest can probably fill it in during a coffee break.
+
+**Alone with nothing around it** — territory nobody has written about at all. Answering it means someone sitting down and thinking.
+
+Those are different jobs for different people on different timescales, and the queue can't tell them apart. The map can, without labelling anything.
+
+The projection is PCA by power iteration, computed by `php artisan lacuna:map` and stored on the rows. Cruder separation than UMAP would give, but it needs no Python and no extra toolchain.
+
 ## Try it
 
 ```bash
@@ -91,6 +109,7 @@ Create a PostgreSQL database with the `vector` extension available, point `.env`
 php artisan migrate
 php artisan db:seed --class=DemoKnowledgeSeeder
 php artisan queue:work --stop-when-empty
+php artisan lacuna:map
 ```
 
 The seed data is fifteen documents of realistic internal docs, so you can start asking it things right away.
@@ -177,7 +196,9 @@ Worth knowing before you point it at anything real.
 - **No permissions.** Everyone who can log in sees everything.
 - **Plain text and pasted code only.** PDF and Word aren't wired up.
 - **Answers aren't versioned.** Editing a curated answer overwrites the old one.
+- **The queue doesn't count repeats.** A question six people asked looks the same as one somebody asked in passing.
 - **Staleness is coarse.** A changed document flags every curated answer in its topic, not just the ones that actually depended on it. Deliberate, and [explained here](docs/decisions/005-staleness-at-topic-level.md).
+- **The map goes stale.** `lacuna:map` has to be re-run as material is added; nothing schedules it yet.
 - **Your documents leave your network** with `EMBEDDING_DRIVER=openai`. The app self-hosts, the model doesn't. Point it at a local model if that matters.
 - **Nobody's running this in production**, including me. It works and it's tested, but it hasn't met real users yet.
 
@@ -198,7 +219,9 @@ Embeddings and text generation sit behind interfaces, wired through the service 
 | ✅ | Curation, human answers ranked above raw documents |
 | ✅ | Flagging answers for review when their sources change |
 | ✅ | Test suite and CI |
-| ⬜ | Coverage over time, the chart that shows the base filling in |
+| ✅ | Coverage over time, the chart that shows the base filling in |
+| ✅ | The knowledge map |
+| ⬜ | Counting how often a question gets asked |
 | ⬜ | Version history on curated answers |
 | ⬜ | Grouping near-duplicate questions inside a topic |
 | ⬜ | Permissions per area |
